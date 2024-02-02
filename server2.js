@@ -51,6 +51,24 @@ app.post('/api/rating' , async (req , res)=>{
 });
 
 
+// endpoint for movie recommendations for users 
+
+app.get('/api/recommendations/:userId' , async (req , res)=>{
+    try{
+        const userId = parseInt(req.params.userId);
+        const userRatings = await Rating.find({userId});
+        const movieIds = userRatings.map(rating => rating.movieId);
+        const movieRecommendation = new MovieRecommendation(userRatings);
+        const recommendations = await Movie.find({_id : {$nin : movieIds}});
+        res.json(recommendations);
+    } catch(err){
+        console.error('Error fetching recommendations:', err);
+        res.status(500).json({error : 'Internal Error: fetching recommendations'});
+    }
+});
 
 
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 
+});
